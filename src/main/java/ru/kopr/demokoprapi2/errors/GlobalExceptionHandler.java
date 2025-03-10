@@ -17,15 +17,15 @@ public class GlobalExceptionHandler {
     // Перехват собственных исключений
     @ExceptionHandler(CustomException.class)
     ResponseEntity<CustomSuccessResponse<Integer>> handleCustomException(CustomException e) {
-        Integer errorCode = e.getErrorCodes().getErrorCode();
-        String errorMessage = e.getErrorCodes().getErrorMessage();
+        List<Integer> errorCodes = List.of(e.getErrorCodes().getErrorCode());
+        List<String> errorMessages = List.of(e.getErrorCodes().getErrorMessage());
 
         return ResponseEntity
                 .badRequest()
                 .body(new CustomSuccessResponse<>(
-                        errorCode,
-                        List.of(errorCode),
-                        List.of(errorMessage),
+                        errorCodes.get(0),
+                        errorCodes,
+                        errorMessages,
                         false)
                 );
     }
@@ -33,11 +33,13 @@ public class GlobalExceptionHandler {
     // Перехват исключений валидации
     @ExceptionHandler(ConstraintViolationException.class)
     ResponseEntity<CustomSuccessResponse<Integer>> handleConstraintViolationException(ConstraintViolationException e) {
+        // Лист кодов ошибок
         List<Integer> violationErrorCodes = e.getConstraintViolations()
                 .stream()
                 .map(objectError -> ErrorCodes.getErrorCodeByMessage(objectError.getMessage()))
                 .toList();
 
+        // Лист сообщений ошибок
         List<String> violationErrorMessages = e.getConstraintViolations()
                 .stream()
                 .map(ConstraintViolation::getMessage)
@@ -56,10 +58,12 @@ public class GlobalExceptionHandler {
     // Перехват исключений валидации
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<CustomSuccessResponse<Integer>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        // Лист кодов ошибок
         List<Integer> validationErrorsCodes = e.getBindingResult().getAllErrors().stream()
                 .map(objectError -> ErrorCodes.getErrorCodeByMessage(objectError.getDefaultMessage()))
                 .toList();
 
+        // Лист сообщений ошибок
         List<String> validationErrorsMessages = e.getBindingResult().getAllErrors().stream()
                 .map(ObjectError::getDefaultMessage)
                 .toList();

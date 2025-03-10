@@ -28,17 +28,16 @@ public class PersonServiceImpl implements PersonService {
         return personRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCodes.PERSON_NOT_FOUND));
     }
 
-    /**
-     * Перекладываем провалидированные данные из дто в сущность и сохраняем
-     * */
+    //Перекладываем провалидированные данные из дто в сущность и сохраняем
     @Override
     public void addPerson(PersonCreateRequest createRequest) {
-        PersonEntity personEntity = new PersonEntity();
 
-        personEntity.setName(createRequest.name());
-        personEntity.setSurname(createRequest.surname());
-        personEntity.setGender(createRequest.gender());
-        personEntity.setBirthDate(createRequest.birthDate());
+        PersonEntity personEntity = PersonEntity.fromParams(
+                createRequest.name(),
+                createRequest.surname(),
+                createRequest.gender(),
+                createRequest.birthDate()
+        );
 
         personRepository.save(personEntity);
     }
@@ -48,29 +47,20 @@ public class PersonServiceImpl implements PersonService {
         Optional<PersonEntity> personEntityOptional = personRepository.findById(id);
 
         if (personEntityOptional.isPresent()) {
-            PersonEntity personEntity = new PersonEntity();
-
-            personEntity.setId(id);
-
-            personEntity.setName(
+            PersonEntity personEntity = PersonEntity.fromParams(
+                    id,
                     request.name() == null
                         ? personEntityOptional.get().getName()
-                        : request.name()
-            );
+                        : request.name(),
 
-            personEntity.setSurname(
                     request.surname() == null
                         ? personEntityOptional.get().getSurname()
-                        : request.surname()
-            );
+                        : request.surname(),
 
-            personEntity.setGender(
                     request.gender() == null
                         ? personEntityOptional.get().getGender()
-                        : request.gender()
-            );
+                        : request.gender(),
 
-            personEntity.setBirthDate(
                     request.birthDate() == null
                         ? personEntityOptional.get().getBirthDate()
                         : request.birthDate()
